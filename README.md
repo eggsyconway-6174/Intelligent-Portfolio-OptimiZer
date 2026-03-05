@@ -53,43 +53,7 @@
 
 ---
 
-## 📁 **REPOSITORY ANATOMY**
-portfolio-optimizer/
-│
-├── 📂 .github/ # GitHub-specific files
-│ ├── ISSUE_TEMPLATE/ # Issue templates
-│ │ ├── bug_report.md
-│ │ └── feature_request.md
-│ └── PULL_REQUEST_TEMPLATE.md # PR template
-│
-├── 📂 src/ # Source code
-│ ├── init.py
-│ ├── app.py # Main Streamlit app
-│ ├── portfolio_optimizer.py # Core optimization logic
-│ └── utils.py # Helper functions
-│
-├── 📂 tests/ # Unit tests
-│ ├── init.py
-│ └── test_optimizer.py
-│
-├── 📂 docs/ # Documentation
-│ └── images/ # README images
-│
-├── .gitignore # Tells Git which files to ignore
-├── LICENSE # MIT License
-├── CONTRIBUTING.md # Guidelines for contributors
-├── requirements.txt # Python dependencies
-├── README.md # This file
-└── setup.py # Package setup
 
-| File | Purpose |
-|------|---------|
-| **.gitignore** | Prevents API keys, temp files, and OS junk from being uploaded |
-| **LICENSE** | MIT License - without this, code is "all rights reserved" |
-| **CONTRIBUTING.md** | Guidelines for contributors - keeps PRs clean |
-| **.github/** | Issue/PR templates - standardizes feedback |
-
----
 🌍 SUPPORTED EXCHANGES = {
   "🇺🇸 US": ["NYSE", "NASDAQ"],
   "🇬🇧 UK": ["LSE"],
