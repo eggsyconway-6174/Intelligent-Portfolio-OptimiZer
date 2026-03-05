@@ -1,0 +1,593 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+import warnings
+warnings.filterwarnings('ignore')
+
+plt.style.use('default')
+plt.rcParams['figure.figsize'] = (20, 22)
+plt.rcParams['font.size'] = 10
+
+class PortfolioAnalyzerFinal:
+    def __init__(self):
+        self.tickers = []
+        self.prices = None
+        self.returns = None
+        self.mean_returns = None
+        self.cov_matrix = None
+        self.corr_matrix = None
+        self.optimal_weights = None
+        self.portfolio_returns = None
+        self.start_date = None
+        self.end_date = None
+        
+    def display_welcome(self):
+        """Display welcome message"""
+        print("\n" + "="*80)
+        print("📊 PROFESSIONAL PORTFOLIO ANALYZER".center(80))
+        print("="*80)
+        print("\nThis tool will:")
+        print("• Generate 9 professional charts of your portfolio")
+        print("• Provide a comprehensive glossary explaining every chart")
+        print("• Give you key metrics and insights about your investments\n")
+    
+    def get_stocks(self):
+        """Get stock symbols from user"""
+        print("-"*80)
+        print("STEP 1: ENTER YOUR STOCK SYMBOLS".center(80))
+        print("-"*80)
+        
+        print("\n📌 Examples:")
+        print("   US: AAPL, MSFT, GOOGL, AMZN, TSLA")
+        print("   India: RELIANCE.NS, TCS.NS, HDFCBANK.NS")
+        print("   UK: HSBA.L, BP.L, SHEL.L")
+        print("   Canada: SHOP.TO, ENB.TO, RY.TO")
+        
+        while True:
+            ticker_input = input("\n👉 Enter symbols (comma-separated): ").strip()
+            
+            if not ticker_input:
+                print("❌ Please enter at least one symbol")
+                continue
+            
+            self.tickers = [t.strip().upper() for t in ticker_input.split(',')]
+            
+            if len(self.tickers) < 2:
+                print("⚠️  Please enter at least 2 stocks for proper analysis")
+                continue
+            
+            print(f"\n✅ Analyzing: {', '.join(self.tickers)}")
+            return True
+    
+    def get_date_range(self):
+        """Get date range"""
+        print("\n" + "-"*80)
+        print("STEP 2: SELECT TIME PERIOD".center(80))
+        print("-"*80)
+        
+        print("\n1. Last 1 year")
+        print("2. Last 3 years") 
+        print("3. Last 5 years")
+        print("4. Last 10 years")
+        
+        choice = input("\n👉 Your choice (1-4, default=1): ").strip() or '1'
+        
+        self.end_date = datetime.now()
+        days = {'1': 365, '2': 365*3, '3': 365*5, '4': 365*10}.get(choice, 365)
+        self.start_date = self.end_date - timedelta(days=days)
+        
+        print(f"📅 Analyzing from {self.start_date.strftime('%b %Y')} to {self.end_date.strftime('%b %Y')}")
+    
+    def fetch_data(self):
+        """Fetch stock data"""
+        print("\n" + "-"*80)
+        print("STEP 3: FETCHING MARKET DATA".center(80))
+        print("-"*80)
+        
+        try:
+            import yfinance as yf
+        except ImportError:
+            print("\n⚠️  Using sample data for demonstration")
+            self.generate_sample_data()
+            return
+        
+        prices_dict = {}
+        successful = []
+        
+        for ticker in self.tickers:
+            print(f"   {ticker}...", end=' ')
+            try:
+                stock = yf.Ticker(ticker)
+                hist = stock.history(start=self.start_date, end=self.end_date)
+                if not hist.empty:
+                    prices_dict[ticker] = hist['Close']
+                    successful.append(ticker)
+                    print("✅")
+                else:
+                    print("❌ No data")
+            except:
+                print("❌ Error")
+        
+        if successful:
+            self.tickers = successful
+            self.prices = pd.DataFrame(prices_dict)
+            self.prices = self.prices.ffill().bfill().dropna()
+            print(f"\n✅ Loaded data for: {', '.join(self.tickers)}")
+        else:
+            print("\n⚠️  Using sample data instead")
+            self.generate_sample_data()
+    
+    def generate_sample_data(self):
+        """Generate sample data"""
+        if not self.tickers:
+            self.tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
+        
+        dates = pd.date_range(start=self.start_date, end=self.end_date, freq='B')
+        n_days = len(dates)
+        n_stocks = len(self.tickers)
+        
+        np.random.seed(42)
+        returns = np.random.randn(n_days, n_stocks) * 0.015
+        prices = 100 * np.exp(np.cumsum(returns, axis=0))
+        
+        self.prices = pd.DataFrame(prices, index=dates, columns=self.tickers)
+        print(f"✅ Generated sample data for {n_stocks} stocks")
+    
+    def calculate_metrics(self):
+        """Calculate all metrics"""
+        print("\n" + "-"*80)
+        print("STEP 4: CALCULATING METRICS".center(80))
+        print("-"*80)
+        
+        self.returns = self.prices.pct_change().dropna()
+        self.mean_returns = self.returns.mean() * 252
+        self.cov_matrix = self.returns.cov() * 252
+        self.corr_matrix = self.returns.corr()
+        
+        # Equal weight portfolio
+        n = len(self.tickers)
+        self.optimal_weights = np.array([1/n] * n)
+        
+        self.portfolio_returns = pd.Series(
+            np.dot(self.returns, self.optimal_weights),
+            index=self.returns.index
+        )
+        
+        self.port_return = np.sum(self.mean_returns * self.optimal_weights) * 100
+        self.port_risk = np.sqrt(np.dot(self.optimal_weights.T, 
+                                       np.dot(self.cov_matrix, self.optimal_weights))) * 100
+        
+        # Additional metrics for glossary
+        self.sharpe_ratio = self.port_return / self.port_risk if self.port_risk > 0 else 0
+        self.pos_days = (self.portfolio_returns > 0).sum() / len(self.portfolio_returns) * 100
+        
+        cumulative = (1 + self.portfolio_returns).cumprod()
+        self.total_return = (cumulative.iloc[-1] - 1) * 100
+        self.max_drawdown = ((cumulative / cumulative.expanding().max()) - 1).min() * 100
+        
+        self.best_day = self.portfolio_returns.max() * 100
+        self.worst_day = self.portfolio_returns.min() * 100
+        
+        # Stock specific metrics
+        self.stock_returns = []
+        self.stock_risks = []
+        for ticker in self.tickers:
+            ret = self.returns[ticker].mean() * 252 * 100
+            risk = self.returns[ticker].std() * np.sqrt(252) * 100
+            self.stock_returns.append(ret)
+            self.stock_risks.append(risk)
+        
+        self.avg_correlation = (self.corr_matrix.values.sum() - n) / (n**2 - n)
+        
+        print("✅ All calculations complete")
+    
+    def create_charts(self):
+        """Create all 9 clean charts (no text on charts)"""
+        print("\n" + "="*80)
+        print("GENERATING 9 PROFESSIONAL CHARTS".center(80))
+        print("="*80)
+        print("\nCharts will appear below. Glossary follows after charts.\n")
+        
+        fig = plt.figure(figsize=(20, 22))
+        
+        # Chart 1: Portfolio Allocation
+        ax1 = plt.subplot(3, 3, 1)
+        colors = plt.cm.Set3(np.linspace(0, 1, len(self.tickers)))
+        wedges, texts, autotexts = ax1.pie(
+            self.optimal_weights,
+            labels=self.tickers,
+            autopct='%1.1f%%',
+            colors=colors,
+            startangle=90,
+            textprops={'fontsize': 8}
+        )
+        ax1.set_title('1. PORTFOLIO ALLOCATION', fontweight='bold', fontsize=11)
+        
+        # Chart 2: Efficient Frontier
+        ax2 = plt.subplot(3, 3, 2)
+        n_portfolios = 3000
+        n_assets = len(self.tickers)
+        results = np.zeros((3, n_portfolios))
+        
+        for i in range(n_portfolios):
+            w = np.random.random(n_assets)
+            w /= w.sum()
+            ret = np.sum(self.mean_returns * w) * 100
+            risk = np.sqrt(np.dot(w.T, np.dot(self.cov_matrix, w))) * 100
+            results[0,i] = ret
+            results[1,i] = risk
+        
+        ax2.scatter(results[1,:], results[0,:], c='blue', alpha=0.3, s=5)
+        ax2.scatter(self.port_risk, self.port_return, color='red', s=100, marker='*', label='Your Portfolio')
+        ax2.set_xlabel('Risk (%)')
+        ax2.set_ylabel('Return (%)')
+        ax2.set_title('2. EFFICIENT FRONTIER', fontweight='bold', fontsize=11)
+        ax2.grid(True, alpha=0.3)
+        ax2.legend()
+        
+        # Chart 3: Cumulative Returns
+        ax3 = plt.subplot(3, 3, 3)
+        cumulative = (1 + self.portfolio_returns).cumprod()
+        ax3.plot(cumulative.index, cumulative, linewidth=2, color='green')
+        ax3.axhline(y=1, color='red', linestyle='--', alpha=0.5)
+        ax3.set_xlabel('Date')
+        ax3.set_ylabel('Value of $1 Invested')
+        ax3.set_title('3. CUMULATIVE RETURNS', fontweight='bold', fontsize=11)
+        ax3.grid(True, alpha=0.3)
+        
+        # Chart 4: Rolling Volatility
+        ax4 = plt.subplot(3, 3, 4)
+        rolling_vol = self.portfolio_returns.rolling(60).std() * np.sqrt(252) * 100
+        ax4.plot(rolling_vol.index, rolling_vol, linewidth=2, color='orange')
+        ax4.axhline(y=self.port_risk, color='red', linestyle='--', alpha=0.7)
+        ax4.set_xlabel('Date')
+        ax4.set_ylabel('Risk (%)')
+        ax4.set_title('4. 60-DAY ROLLING VOLATILITY', fontweight='bold', fontsize=11)
+        ax4.grid(True, alpha=0.3)
+        
+        # Chart 5: Correlation Matrix
+        ax5 = plt.subplot(3, 3, 5)
+        im = ax5.imshow(self.corr_matrix, cmap='RdBu_r', vmin=-1, vmax=1, aspect='auto')
+        ax5.set_xticks(range(len(self.tickers)))
+        ax5.set_yticks(range(len(self.tickers)))
+        ax5.set_xticklabels(self.tickers, rotation=45, ha='right', fontsize=7)
+        ax5.set_yticklabels(self.tickers, fontsize=7)
+        ax5.set_title('5. CORRELATION MATRIX', fontweight='bold', fontsize=11)
+        plt.colorbar(im, ax=ax5, label='Correlation')
+        
+        # Add correlation values
+        for i in range(len(self.tickers)):
+            for j in range(len(self.tickers)):
+                if i != j:
+                    val = self.corr_matrix.iloc[i,j]
+                    ax5.text(j, i, f'{val:.2f}', ha='center', va='center', fontsize=7)
+        
+        # Chart 6: Drawdown
+        ax6 = plt.subplot(3, 3, 6)
+        cumulative = (1 + self.portfolio_returns).cumprod()
+        running_max = cumulative.expanding().max()
+        drawdown = (cumulative - running_max) / running_max * 100
+        ax6.fill_between(drawdown.index, drawdown, 0, color='red', alpha=0.3)
+        ax6.plot(drawdown.index, drawdown, color='darkred', linewidth=1)
+        ax6.set_xlabel('Date')
+        ax6.set_ylabel('Drawdown (%)')
+        ax6.set_title('6. PORTFOLIO DRAWDOWN', fontweight='bold', fontsize=11)
+        ax6.grid(True, alpha=0.3)
+        
+        # Chart 7: Return Distribution
+        ax7 = plt.subplot(3, 3, 7)
+        returns_pct = self.portfolio_returns * 100
+        ax7.hist(returns_pct, bins=50, edgecolor='black', alpha=0.7, color='blue')
+        ax7.axvline(x=returns_pct.mean(), color='red', linestyle='--', linewidth=2)
+        ax7.axvline(x=0, color='black', linestyle='-', linewidth=1)
+        ax7.set_xlabel('Daily Return (%)')
+        ax7.set_ylabel('Frequency')
+        ax7.set_title('7. RETURN DISTRIBUTION', fontweight='bold', fontsize=11)
+        ax7.grid(True, alpha=0.3)
+        
+        # Chart 8: Asset Risk-Return
+        ax8 = plt.subplot(3, 3, 8)
+        ax8.scatter(self.stock_risks, self.stock_returns, s=100, alpha=0.7, color='blue')
+        ax8.scatter(self.port_risk, self.port_return, color='red', s=200, marker='*', label='Portfolio')
+        
+        for i, ticker in enumerate(self.tickers):
+            ax8.annotate(ticker, (self.stock_risks[i], self.stock_returns[i]), 
+                        fontsize=7, ha='center')
+        
+        ax8.set_xlabel('Risk (%)')
+        ax8.set_ylabel('Return (%)')
+        ax8.set_title('8. ASSET RISK-RETURN', fontweight='bold', fontsize=11)
+        ax8.grid(True, alpha=0.3)
+        ax8.legend()
+        
+        # Chart 9: Monthly Returns Heatmap
+        ax9 = plt.subplot(3, 3, 9)
+        try:
+            monthly = self.portfolio_returns.resample('M').apply(lambda x: (1 + x).prod() - 1) * 100
+            years = monthly.index.year
+            months = monthly.index.month
+            unique_years = sorted(set(years))[-3:]  # Last 3 years only
+            
+            month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            
+            heatmap_data = np.full((len(unique_years), 12), np.nan)
+            
+            for i, year in enumerate(unique_years):
+                for month in range(1, 13):
+                    mask = (years == year) & (months == month)
+                    if mask.any():
+                        heatmap_data[i, month-1] = monthly[mask].values[0]
+            
+            im = ax9.imshow(heatmap_data, cmap='RdYlGn', aspect='auto', vmin=-10, vmax=10)
+            ax9.set_xticks(range(12))
+            ax9.set_yticks(range(len(unique_years)))
+            ax9.set_xticklabels(month_names, fontsize=7)
+            ax9.set_yticklabels(unique_years, fontsize=8)
+            ax9.set_xlabel('Month')
+            ax9.set_ylabel('Year')
+            ax9.set_title('9. MONTHLY RETURNS (%)', fontweight='bold', fontsize=11)
+            plt.colorbar(im, ax=ax9, label='Return %')
+            
+            # Add values
+            for i in range(len(unique_years)):
+                for j in range(12):
+                    if not np.isnan(heatmap_data[i, j]):
+                        val = heatmap_data[i, j]
+                        ax9.text(j, i, f'{val:.1f}', ha='center', va='center', fontsize=7)
+        except:
+            ax9.text(0.5, 0.5, 'Insufficient data', ha='center', va='center')
+            ax9.set_title('9. MONTHLY RETURNS', fontweight='bold')
+        
+        plt.suptitle('PORTFOLIO ANALYSIS - 9 PROFESSIONAL CHARTS', 
+                    fontsize=14, fontweight='bold', y=0.98)
+        plt.tight_layout()
+        plt.show()
+    
+    def display_glossary(self):
+        """Display comprehensive glossary as printed output"""
+        print("\n" + "="*80)
+        print("📚 COMPREHENSIVE GLOSSARY & INTERPRETATION GUIDE".center(80))
+        print("="*80)
+        
+        print("\n" + "-"*80)
+        print("CHART 1: PORTFOLIO ALLOCATION".center(80))
+        print("-"*80)
+        print("""
+📌 WHAT THIS CHART SHOWS:
+   This pie chart displays how your investment money is divided among different stocks.
+""")
+        print("📊 YOUR PORTFOLIO NUMBERS:")
+        for ticker, weight in zip(self.tickers, self.optimal_weights):
+            print(f"   • {ticker}: {weight*100:.1f}%")
+        
+        max_stock = self.tickers[np.argmax(self.optimal_weights)]
+        max_weight = max(self.optimal_weights) * 100
+        print(f"""
+💡 WHAT THIS MEANS FOR YOU:
+   • Your largest holding is {max_stock} at {max_weight:.1f}%""")
+        if max_weight > 25:
+            print("   • ⚠️ This is quite concentrated. Consider diversifying more.")
+        else:
+            print("   • ✅ Your allocation appears reasonably diversified.")
+        print("   • Financial experts often recommend no single stock exceeds 20-25%.")
+        
+        print("\n" + "-"*80)
+        print("CHART 2: EFFICIENT FRONTIER".center(80))
+        print("-"*80)
+        print("""
+📌 WHAT THIS CHART SHOWS:
+   Each blue dot represents a different possible combination of your stocks.
+   The red star shows where YOUR actual portfolio sits.
+   This chart helps you see if you could get better returns for the same risk.
+""")
+        print(f"""📊 YOUR PORTFOLIO NUMBERS:
+   • Your expected annual return: {self.port_return:.1f}%
+   • Your annual risk (volatility): {self.port_risk:.1f}%
+   • Your return/risk ratio: {self.port_return/self.port_risk:.2f}
+
+💡 WHAT THIS MEANS FOR YOU:
+   • Higher return/risk ratio means better efficiency.
+   • If your portfolio sits in a cluster of dots, similar mixes exist.
+   • If it's isolated, your allocation is unique.
+   • The best portfolios are on the upper-left edge of the dot cloud.""")
+        
+        print("\n" + "-"*80)
+        print("CHART 3: CUMULATIVE RETURNS".center(80))
+        print("-"*80)
+        final_value = (1 + self.portfolio_returns).cumprod().iloc[-1]
+        print(f"""
+📌 WHAT THIS CHART SHOWS:
+   This line chart shows how $1 invested at the beginning would have grown over time.
+   The red dashed line represents your starting point ($1).
+
+📊 YOUR PORTFOLIO NUMBERS:
+   • If you invested $1 at the start, it would be worth ${final_value:.2f} today
+   • Total return over the period: {self.total_return:.1f}%
+   • Analysis period: {self.start_date.strftime('%b %Y')} to {self.end_date.strftime('%b %Y')}
+
+💡 WHAT THIS MEANS FOR YOU:
+   • Line going up = periods of profit
+   • Line going down = periods of loss
+   • Steeper lines = faster growth
+   • Flatter lines = slower growth or sideways markets""")
+        
+        print("\n" + "-"*80)
+        print("CHART 4: 60-DAY ROLLING VOLATILITY".center(80))
+        print("-"*80)
+        max_roll = self.portfolio_returns.rolling(60).std().max() * np.sqrt(252) * 100
+        min_roll = self.portfolio_returns.rolling(60).std().min() * np.sqrt(252) * 100
+        print(f"""
+📌 WHAT THIS CHART SHOWS:
+   This chart tracks how risky your portfolio feels over time.
+   Higher values = more uncertainty, bigger price swings.
+   The red line shows your average risk level.
+
+📊 YOUR PORTFOLIO NUMBERS:
+   • Average risk over whole period: {self.port_risk:.1f}%
+   • Highest risk period: {max_roll:.1f}%
+   • Lowest risk period: {min_roll:.1f}%
+
+💡 WHAT THIS MEANS FOR YOU:
+   • Spikes indicate turbulent markets (like crashes or high uncertainty)
+   • Dips indicate calmer periods
+   • If you can't sleep during spikes, you might need a less risky portfolio
+   • Your risk tolerance should match these numbers""")
+        
+        print("\n" + "-"*80)
+        print("CHART 5: CORRELATION MATRIX".center(80))
+        print("-"*80)
+        print(f"""
+📌 WHAT THIS CHART SHOWS:
+   This heatmap shows how your stocks move in relation to each other.
+   • +1 (dark red) = stocks move perfectly together
+   • 0 (white) = stocks move independently
+   • -1 (dark blue) = stocks move opposite each other
+
+📊 YOUR PORTFOLIO NUMBERS:
+   • Average correlation among your stocks: {self.avg_correlation:.2f}
+   • Highest correlation: {self.corr_matrix.values.max():.2f}
+   • Lowest correlation: {self.corr_matrix.values.min():.2f}
+
+💡 WHAT THIS MEANS FOR YOU:
+   • Lower correlations (< 0.5) = better diversification""")
+        if self.avg_correlation < 0.3:
+            divers_status = "excellent"
+        elif self.avg_correlation < 0.5:
+            divers_status = "good"
+        elif self.avg_correlation < 0.7:
+            divers_status = "moderate"
+        else:
+            divers_status = "poor"
+        print(f"   • Your portfolio's average correlation of {self.avg_correlation:.2f} indicates {divers_status} diversification.")
+        
+        print("\n" + "-"*80)
+        print("CHART 6: PORTFOLIO DRAWDOWN".center(80))
+        print("-"*80)
+        print(f"""
+📌 WHAT THIS CHART SHOWS:
+   This chart reveals how far your portfolio fell from its previous peaks.
+   It shows the worst declines you would have experienced.
+
+📊 YOUR PORTFOLIO NUMBERS:
+   • Maximum drawdown (worst decline): {abs(self.max_drawdown):.1f}%
+   • This means from peak to trough, you would have lost {abs(self.max_drawdown):.1f}% temporarily
+
+💡 WHAT THIS MEANS FOR YOU:
+   • Drawdowns are normal - every investment has them
+   • The key question: Can you stomach a {abs(self.max_drawdown):.1f}% temporary loss?
+   • If not, consider a more conservative allocation
+   • Markets typically recover from drawdowns, but it takes time""")
+        
+        print("\n" + "-"*80)
+        print("CHART 7: RETURN DISTRIBUTION".center(80))
+        print("-"*80)
+        print(f"""
+📌 WHAT THIS CHART SHOWS:
+   This histogram shows how often different daily returns occur.
+   The red line shows your average daily return.
+
+📊 YOUR PORTFOLIO NUMBERS:
+   • Average daily return: {self.portfolio_returns.mean() * 100:.2f}%
+   • Profitable days: {self.pos_days:.1f}% of all trading days
+   • Best single day: +{self.best_day:.1f}%
+   • Worst single day: {self.worst_day:.1f}%
+
+💡 WHAT THIS MEANS FOR YOU:
+   • A balanced portfolio should have roughly 50-60% positive days""")
+        if self.pos_days > 55:
+            pos_status = "excellent"
+        elif self.pos_days > 52:
+            pos_status = "good"
+        elif self.pos_days > 48:
+            pos_status = "average"
+        else:
+            pos_status = "below average"
+        print(f"   • Your {self.pos_days:.1f}% profitable days is {pos_status}")
+        print("""   • The shape tells you about risk:
+     - Wide spread = more uncertainty
+     - Narrow spread = more predictable
+   • Extremely positive or negative days (outliers) indicate tail risk""")
+        
+        print("\n" + "-"*80)
+        print("CHART 8: ASSET RISK-RETURN".center(80))
+        print("-"*80)
+        print(f"""
+📌 WHAT THIS CHART SHOWS:
+   Each blue dot represents one of your stocks.
+   The red star shows your combined portfolio.
+   Position on chart:
+   • Higher up = better returns
+   • More left = safer (less volatile)
+
+📊 YOUR PORTFOLIO NUMBERS:
+   • Your portfolio return: {self.port_return:.1f}%
+   • Your portfolio risk: {self.port_risk:.1f}%
+
+💡 WHAT THIS MEANS FOR YOU:
+   • Best stocks are in top-left corner (high return, low risk)
+   • Notice how your portfolio (red star) differs from individual stocks
+   • Ideally, your portfolio should be more left (safer) than some stocks
+   • This is the "diversification benefit" - combining stocks reduces risk""")
+        
+        print("\n" + "-"*80)
+        print("CHART 9: MONTHLY RETURNS HEATMAP".center(80))
+        print("-"*80)
+        print("""
+📌 WHAT THIS CHART SHOWS:
+   This heatmap displays monthly returns in a calendar format.
+   • Green = profitable month
+   • Red = losing month
+   • Darker colors = bigger gains/losses
+
+📊 YOUR PORTFOLIO PATTERNS:
+   • Look for seasonal patterns in the colors
+   • Check if certain months consistently perform well or poorly
+   • Identify your best and worst months historically
+
+💡 WHAT THIS MEANS FOR YOU:
+   • Some months (like January) historically show patterns
+   • Use this to understand when your portfolio might be vulnerable
+   • Helps with timing decisions (though timing the market is difficult)
+   • Consistent patterns might suggest sector or seasonal exposures""")
+        
+        print("\n" + "-"*80)
+        print("📊 PORTFOLIO SUMMARY STATISTICS".center(80))
+        print("-"*80)
+        print(f"""
+🔹 Expected Annual Return: {self.port_return:.1f}%
+🔹 Expected Annual Risk: {self.port_risk:.1f}%
+🔹 Return/Risk Ratio: {(self.port_return/self.port_risk):.2f}
+🔹 Total Return Over Period: {self.total_return:.1f}%
+🔹 Maximum Drawdown: {abs(self.max_drawdown):.1f}%
+🔹 Profitable Days: {self.pos_days:.1f}%
+🔹 Best Day: +{self.best_day:.1f}%
+🔹 Worst Day: {self.worst_day:.1f}%
+🔹 Average Correlation: {self.avg_correlation:.2f}
+        """)
+    
+    def run(self):
+        """Main function"""
+        self.display_welcome()
+        
+        if not self.get_stocks():
+            return
+        
+        self.get_date_range()
+        self.fetch_data()
+        self.calculate_metrics()
+        self.create_charts()
+        self.display_glossary()
+        
+        print("\n" + "="*80)
+        print("✅ ANALYSIS COMPLETE".center(80))
+        print("="*80)
+        print("\nStudy the 9 charts above and the detailed glossary below.")
+        print("Each chart is explained in plain English with YOUR specific numbers.")
+        print("\n👋 Happy Investing!")
+
+# Run the analyzer
+if __name__ == "__main__":
+    analyzer = PortfolioAnalyzerFinal()
+    analyzer.run()
