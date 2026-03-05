@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Portfolio Optimizer Banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,3,4&height=200&section=header&text=CONWAYS%20CONSULTANCY&fontSize=50&fontAlignY=35&desc=Portfolio%20Optimizer%20Fin'gine%20%7C%209D%20Analytics%20Engine&descAlignY=55&descSize=18)
+![Portfolio Optimizer Banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,3,4&height=200&section=header&text=CONWAYS%20CONSULTANCY&fontSize=50&fontAlignY=35&desc=Portfolio%20Optimizer%20Fin'gine%20%7C%20Markowitz%20Mean-Variance%20Optimization%20Model%20Analytical%20Engine&descAlignY=55&descSize=18)
 
 [![Stars](https://img.shields.io/github/stars/eggsyconway-6174/portfolio-optimizer?style=for-the-badge&logo=github&color=yellow)](https://github.com/eggsyconway-6174/portfolio-optimizer/stargazers)
 [![Forks](https://img.shields.io/github/forks/eggsyconway-6174/portfolio-optimizer?style=for-the-badge&logo=github&color=blue)](https://github.com/eggsyconway-6174/portfolio-optimizer/network)
