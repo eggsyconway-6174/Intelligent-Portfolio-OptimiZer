@@ -54,3 +54,175 @@
 ---
 
 ## 📁 **REPOSITORY ANATOMY**
+portfolio-optimizer/
+│
+├── 📂 .github/ # GitHub-specific files
+│ ├── ISSUE_TEMPLATE/ # Issue templates
+│ │ ├── bug_report.md
+│ │ └── feature_request.md
+│ └── PULL_REQUEST_TEMPLATE.md # PR template
+│
+├── 📂 src/ # Source code
+│ ├── init.py
+│ ├── app.py # Main Streamlit app
+│ ├── portfolio_optimizer.py # Core optimization logic
+│ └── utils.py # Helper functions
+│
+├── 📂 tests/ # Unit tests
+│ ├── init.py
+│ └── test_optimizer.py
+│
+├── 📂 docs/ # Documentation
+│ └── images/ # README images
+│
+├── .gitignore # Tells Git which files to ignore
+├── LICENSE # MIT License
+├── CONTRIBUTING.md # Guidelines for contributors
+├── requirements.txt # Python dependencies
+├── README.md # This file
+└── setup.py # Package setup
+
+| File | Purpose |
+|------|---------|
+| **.gitignore** | Prevents API keys, temp files, and OS junk from being uploaded |
+| **LICENSE** | MIT License - without this, code is "all rights reserved" |
+| **CONTRIBUTING.md** | Guidelines for contributors - keeps PRs clean |
+| **.github/** | Issue/PR templates - standardizes feedback |
+
+---
+
+## 🌌 **CONWAYS CONSULTANCY - NEURAL INTERFACE OVERVIEW**
+
+```ascii
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║    ██████╗ ██████╗ ███╗   ██╗██╗    ██╗ █████╗ ██╗   ██╗███████╗  ║
+║   ██╔════╝██╔═══██╗████╗  ██║██║    ██║██╔══██╗╚██╗ ██╔╝██╔════╝  ║
+║   ██║     ██║   ██║██╔██╗ ██║██║ █╗ ██║███████║ ╚████╔╝ ███████╗  ║
+║   ██║     ██║   ██║██║╚██╗██║██║███╗██║██╔══██║  ╚██╔╝  ╚════██║  ║
+║   ╚██████╗╚██████╔╝██║ ╚████║╚███╔███╔╝██║  ██║   ██║   ███████║  ║
+║    ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝ ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝  ║
+║                                                                   ║
+║                    ██████╗ ██████╗ ███╗   ██╗███████╗██╗          ║
+║                   ██╔════╝██╔═══██╗████╗  ██║██╔════╝██║          ║
+║                   ██║     ██║   ██║██╔██╗ ██║█████╗  ██║          ║
+║                   ██║     ██║   ██║██║╚██╗██║██╔══╝  ██║          ║
+║                   ╚██████╗╚██████╔╝██║ ╚████║██║     ██║          ║
+║                    ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝          ║
+║                                                                   ║
+║                 Analytics & Consultancy made superYeezY           ║
+╚═══════════════════════════════════════════════════════════════════╝
+🌍 SUPPORTED EXCHANGES = {
+  "🇺🇸 US": ["NYSE", "NASDAQ"],
+  "🇬🇧 UK": ["LSE"],
+  "🇮🇳 India": ["NSE", "BSE"],
+  "🇯🇵 Japan": ["TSE"],
+  "🇭🇰 Hong Kong": ["HKEX"],
+  "🇨🇦 Canada": ["TSX"],
+  "🇩🇪 Germany": ["FRA"],
+  "🇫🇷 France": ["PAR"],
+  "🇦🇺 Australia": ["ASX"],
+  "🇨🇳 China": ["SSE"],
+  "🇰🇷 South Korea": ["KRX"],
+  "🇸🇬 Singapore": ["SGX"]
+}# 1. Clone the repository
+git clone https://github.com/eggsyconway-6174/portfolio-optimizer.git
+cd portfolio-optimizer
+
+# 2. Create virtual environment
+python -m venv venv
+
+# 3. Activate it
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# 4. Install dependencies
+pip install -r requirements.txt
+
+# 5. Run the app
+streamlit run app.pystreamlit==1.28.0
+yfinance==0.2.28
+pandas==2.0.3
+numpy==1.24.3
+matplotlib==3.7.2
+plotly==5.17.0
+scipy==1.11.1
+seaborn==0.12.2streamlit==1.28.0
+yfinance==0.2.28
+pandas==2.0.3
+numpy==1.24.3
+matplotlib==3.7.2
+plotly==5.17.0
+scipy==1.11.1
+seaborn==0.12.2
+================================================================================
+📚 CONWAYS CONSULTANCY - COMPREHENSIVE GLOSSARY
+================================================================================
+
+CHART 1: PORTFOLIO ALLOCATION
+-----------------------------
+📌 WHAT IT SHOWS: How your money is divided among stocks
+📊 YOUR NUMBERS: AAPL 20%, MSFT 20%, GOOGL 20%, AMZN 20%, TSLA 20%
+💡 WHAT IT MEANS: Your largest holding is 20% - well diversified
+
+CHART 2: EFFICIENT FRONTIER
+----------------------------
+📌 WHAT IT SHOWS: All possible portfolio combinations
+📊 YOUR NUMBERS: Return 15.3%, Risk 18.7%, Ratio 0.82
+💡 WHAT IT MEANS: Higher ratio = better efficiency
+
+CHART 3: CUMULATIVE RETURNS
+----------------------------
+📌 WHAT IT SHOWS: Growth of $1 over time
+📊 YOUR NUMBERS: $1 → $1.43, Total Return 43.0%
+💡 WHAT IT MEANS: Line up = profit, down = loss
+
+CHART 4: ROLLING VOLATILITY
+----------------------------
+📌 WHAT IT SHOWS: How risk changes over time
+📊 YOUR NUMBERS: Avg 18.7%, High 32.4%, Low 12.1%
+💡 WHAT IT MEANS: Spikes = turbulent markets
+
+CHART 5: CORRELATION MATRIX
+----------------------------
+📌 WHAT IT SHOWS: How stocks move together
+📊 YOUR NUMBERS: Avg correlation 0.35
+💡 WHAT IT MEANS: Lower = better diversification
+
+CHART 6: PORTFOLIO DRAWDOWN
+----------------------------
+📌 WHAT IT SHOWS: How far you fell from peaks
+📊 YOUR NUMBERS: Worst drop -15.3%
+💡 WHAT IT MEANS: Can you stomach this loss?
+
+CHART 7: RETURN DISTRIBUTION
+-----------------------------
+📌 WHAT IT SHOWS: Frequency of daily returns
+📊 YOUR NUMBERS: Profitable days 54.8%
+💡 WHAT IT MEANS: 55% profitable days is good
+
+CHART 8: ASSET RISK-RETURN
+---------------------------
+📌 WHAT IT SHOWS: Each stock's risk vs return
+📊 YOUR NUMBERS: Portfolio return 15.3%, risk 18.7%
+💡 WHAT IT MEANS: Best stocks = top-left corner
+
+CHART 9: MONTHLY HEATMAP
+-------------------------
+📌 WHAT IT SHOWS: Monthly performance patterns
+💡 WHAT IT MEANS: Green = profit, Red = loss
+
+================================================================================
+📊 PORTFOLIO SUMMARY STATISTICS
+================================================================================
+🔹 Expected Annual Return: 15.3%
+🔹 Expected Annual Risk: 18.7%
+🔹 Return/Risk Ratio: 0.82
+🔹 Total Return: 43.0%
+🔹 Maximum Drawdown: 15.3%
+🔹 Profitable Days: 54.8%
+🔹 Best Day: +3.2%
+🔹 Worst Day: -2.8%
+🔹 Average Correlation: 0.35
