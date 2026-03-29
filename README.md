@@ -1,4 +1,4 @@
-# 📈 CONWAYS CONSULTANCY - Portfolio Optimiser Engine
+# 📈 CONWAYS CONSULTANCY - Portfolio Optimiser Fin'gine
 
 <div align="center">
 
